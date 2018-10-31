@@ -7,9 +7,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
+import pickle
 
 
 df = pd.read_csv("../data/train.csv").drop("id",axis=1)
+df_test = pd.read_csv("../data/test.csv").drop("id",axis=1)
+# df_test_id = df_test.loc[df_test['id']]
 
 labels = df["target"].values
 print(type(labels))
@@ -24,8 +27,10 @@ df_train = df.drop("target", axis=1)
 # df_train
 
 X = df_train.values
+X_test = df_test.values
 
 print(X.shape)
+print(X_test.shape)
 
 y = []
 for label in labels:
@@ -46,12 +51,13 @@ from sklearn.metrics.pairwise import pairwise_distances
 print("Construction de la représentation dcDistance")
 
 X_dc = pairwise_distances(X,centroids)
+X_test_dc = pairwise_distances(X_test, centroids)
 
 print("Construction terminée \n")
 
 
 def to_one_hot(labels):
-    
+
     b = np.zeros((labels.size, labels.max()+1))
     b[np.arange(labels.size),labels] = 1
     return b
@@ -65,22 +71,25 @@ print("Apprentissage données brutes")
 
 k_neighbors = 10
 
-X = normalize(X)
+X_train = normalize(X)
+y_train = y
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
 
 knn = KNeighborsClassifier(n_neighbors = k_neighbors)
 knn.fit(X_train, y_train)
 
 pred = knn.predict(X_test)
+pred_proba = knn.predict_proba(X_test)
+pickle.dump(pred_proba, open('../data/brute.csv', 'wb'))
 
-print("-- Scores en représentation brute pour K =", k_neighbors, " -- \n")
-
-print("Score de précision : ", accuracy_score(y_test, pred))
-y_true_one_hot = to_one_hot(y_test)
-pred_one_hot = to_one_hot(pred)
-print("Score en log loss :", log_loss(y_true_one_hot, pred_one_hot))
-print("temps écoulé :", round(time.time()-start, 2),"secondes \n")
+# print("-- Scores en représentation brute pour K =", k_neighbors, " -- \n")
+#
+# print("Score de précision : ", accuracy_score(y_test, pred))
+# y_true_one_hot = to_one_hot(y_test)
+# pred_one_hot = to_one_hot(pred)
+# print("Score en log loss :", log_loss(y_true_one_hot, pred_one_hot))
+# print("temps écoulé :", round(time.time()-start, 2),"secondes \n")
 
 ###### Prédictions avec dcDistance
 
@@ -90,21 +99,22 @@ start = time.time()
 
 X_dc = normalize(X_dc)
 
-X_train_dc, X_test_dc, y_train, y_test = train_test_split(X_dc, y, test_size=0.25, random_state=42)
+# X_train_dc, X_test_dc, y_train, y_test = train_test_split(X_dc, y, test_size=0.25, random_state=42)
 
 knn = KNeighborsClassifier(n_neighbors = k_neighbors)
 knn.fit(X_train_dc, y_train)
 
 pred_dc = knn.predict(X_test_dc)
+pred_dc_proba = knn.predict_proba(X_test_dc)
+pickle.dump(pred_proba, open('../data/dc.csv', 'wb'))
 
-print("-- Scores en représentation dcDistance pour K =", k_neighbors, "-- \n")
+# print("-- Scores en représentation dcDistance pour K =", k_neighbors, "-- \n")
+#
+# print("Score de précision : ", accuracy_score(y_test, pred_dc))
+# y_true_one_hot = to_one_hot(y_test)
+# pred_one_hot = to_one_hot(pred_dc)
+# print("Score en log loss :", log_loss(y_true_one_hot, pred_one_hot))
+#
+# print("temps écoulé :", round(time.time()-start, 2),"secondes")
 
-print("Score de précision : ", accuracy_score(y_test, pred_dc))
-y_true_one_hot = to_one_hot(y_test)
-pred_one_hot = to_one_hot(pred_dc)
-print("Score en log loss :", log_loss(y_true_one_hot, pred_one_hot))
-
-print("temps écoulé :", round(time.time()-start, 2),"secondes")
-
-
-
+print('done')
