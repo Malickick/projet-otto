@@ -2,12 +2,14 @@
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, log_loss
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.preprocessing import normalize
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
 import pickle
+from sklearn.linear_model import LogisticRegression
 
 
 df = pd.read_csv("../data/train.csv").drop("id",axis=1)
@@ -65,23 +67,23 @@ def to_one_hot(labels):
 
 # Prédictions avec la représentation brute
 
-start = time.time()
+# start = time.time()
+#
+# print("Apprentissage données brutes")
+#
+# k_neighbors = 10
+#
+# X_train = normalize(X)
+# y_train = y
 
-print("Apprentissage données brutes")
+# # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
 
-k_neighbors = 10
-
-X_train = normalize(X)
-y_train = y
-
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
-
-knn = KNeighborsClassifier(n_neighbors = k_neighbors)
-knn.fit(X_train, y_train)
-
-pred = knn.predict(X_test)
-pred_proba = knn.predict_proba(X_test)
-pickle.dump(pred_proba, open('../data/brute.csv', 'wb'))
+# knn = KNeighborsClassifier(n_neighbors = k_neighbors)
+# knn.fit(X_train, y_train)
+#
+# pred = knn.predict(X_test)
+# pred_proba = knn.predict_proba(X_test)
+# pickle.dump(pred_proba, open('../data/brute.csv', 'wb'))
 
 # print("-- Scores en représentation brute pour K =", k_neighbors, " -- \n")
 #
@@ -96,17 +98,25 @@ pickle.dump(pred_proba, open('../data/brute.csv', 'wb'))
 print("Apprentissage données en représentation dcDistance")
 
 start = time.time()
-
-X_dc = normalize(X_dc)
+y_train = y
+X_train_dc = normalize(X_dc)
 
 # X_train_dc, X_test_dc, y_train, y_test = train_test_split(X_dc, y, test_size=0.25, random_state=42)
 
-knn = KNeighborsClassifier(n_neighbors = k_neighbors)
-knn.fit(X_train_dc, y_train)
+# knn = KNeighborsClassifier(n_neighbors = k_neighbors)
+# knn.fit(X_train_dc, y_train)
 
-pred_dc = knn.predict(X_test_dc)
-pred_dc_proba = knn.predict_proba(X_test_dc)
-pickle.dump(pred_proba, open('../data/dc.csv', 'wb'))
+# CLassifieur
+clf = MultinomialNB()
+clf.fit(X_train_dc, y_train)
+
+clf = clf = LogisticRegression(random_state=0, solver='lbfgs',
+multi_class='multinomial')
+clf.fit(X_train_dc, y_train)
+
+pred_dc = clf.predict(X_test_dc)
+pred_dc_proba = clf.predict_proba(X_test_dc)
+pickle.dump(pred_dc_proba, open('../data/dc.csv', 'wb'))
 
 # print("-- Scores en représentation dcDistance pour K =", k_neighbors, "-- \n")
 #
