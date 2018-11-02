@@ -58,8 +58,8 @@ centroids = np.asarray(centroids)
 from sklearn.metrics.pairwise import pairwise_distances
 print("Construction de la représentation dcDistance")
 
-X_dc = pairwise_distances(X,centroids)
-X_test_dc = pairwise_distances(X_test, centroids)
+X_dc = pairwise_distances(X,centroids, metric="l1")
+X_test_dc = pairwise_distances(X_test, centroids, metric="l1")
 
 print("Construction terminée \n")
 
@@ -144,9 +144,9 @@ X_train_dc = normalize(X_dc)
 clf = MultinomialNB()
 clf.fit(X_train_dc, y_train)
 
-clf = clf = LogisticRegression(random_state=0, solver='lbfgs',
-multi_class='multinomial')
-clf.fit(X_train_dc, y_train)
+# clf = clf = LogisticRegression(random_state=0, solver='lbfgs',
+# multi_class='multinomial')
+# clf.fit(X_train_dc, y_train)
 
 <<<<<<< HEAD
 # pred_dc = knn.predict(X_test_dc)
